@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PocketLedger – Student Expense Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>💸 PocketLedger</h1><small id="greet"></small></div>
+  <div class="tools">
+    <input type="month" id="month" aria-label="Select month" style="width:auto">
+    <button class="ghost" id="theme" aria-label="Toggle theme">🌙</button>
+  </div>
+</header>
+<nav id="nav">
+  <button data-v="dash" class="on">🏠 Dashboard</button>
+  <button data-v="tx">🧾 Transactions</button>
+  <button data-v="bud">🎯 Budgets</button>
+  <button data-v="goal">🐷 Goals</button>
+  <button data-v="ins">💡 Insights</button>
+  <button data-v="set">⚙️ Settings</button>
+</nav>
+
+<!-- DASHBOARD -->
+<main id="dash" class="view on">
+  <section class="hero">
+    <div class="row"><small id="heroLabel"></small><button onclick="go('bud')">Set budget</button></div>
+    <div class="big" id="left">₹0</div>
+    <div class="bar"><i id="barFill"></i></div>
+    <small id="barText"></small>
+    <div class="stats">
+      <div><small>Income</small><b id="inc">₹0</b></div>
+      <div><small>Expenses</small><b id="spent">₹0</b></div>
+      <div><small>Daily average</small><b id="avg">₹0</b></div>
+      <div><small>Safe per day</small><b id="safe">₹0</b></div>
+    </div>
+  </section>
+  <div class="alerts" id="alerts"></div>
+  <div class="grid">
+    <section class="card"><h2>Where your money goes</h2><canvas id="donut" height="200"></canvas><div class="legend" id="legend"></div></section>
+    <section class="card"><h2>Last 6 months</h2><canvas id="bars" height="220"></canvas></section>
+  </div>
+  <section class="card"><h2>Recent transactions</h2><div id="recent"></div></section>
+</main>
+
+<!-- TRANSACTIONS -->
+<main id="tx" class="view">
+  <section class="card">
+    <h2 id="formTitle">Add transaction</h2>
+    <form id="form">
+      <div class="seg full" id="typeSeg"><button type="button" data-t="exp" class="on">Expense</button><button type="button" data-t="inc">Income</button></div>
+      <div class="full"><label for="title">Title</label><input id="title" required maxlength="40" placeholder="e.g. Canteen lunch"></div>
+      <div><label for="amount">Amount (₹)</label><input id="amount" type="number" min="1" step="0.01" required placeholder="120"></div>
+      <div><label for="date">Date</label><input id="date" type="date" required></div>
+      <div><label for="cat">Category</label><select id="cat"></select></div>
+      <div><label for="mode">Payment mode</label><select id="mode"><option>UPI</option><option>Cash</option><option>Card</option><option>Net banking</option></select></div>
+      <div class="full"><label for="note">Note (optional)</label><input id="note" maxlength="80" placeholder="Shared with friends, bill no., etc."></div>
+      <button class="full" type="submit" id="saveBtn">Save transaction</button>
+      <button class="full ghost" type="button" id="cancelBtn" hidden>Cancel edit</button>
+    </form>
+  </section>
+  <section class="card" style="margin-top:16px">
+    <h2>All transactions</h2>
+    <div class="filters">
+      <input id="q" type="search" placeholder="Search title or note" aria-label="Search">
+      <select id="ftype" aria-label="Type"><option value="">Income + Expense</option><option value="exp">Expenses only</option><option value="inc">Income only</option></select>
+      <select id="fcat" aria-label="Category"><option value="">All categories</option></select>
+      <select id="sort" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option><option value="high">Highest amount</option><option value="low">Lowest amount</option></select>
+    </div>
+    <div id="list"></div>
+    <small id="listSum" class="mute"></small>
+  </section>
+</main>
+
+<!-- BUDGETS -->
+<main id="bud" class="view">
+  <div class="grid">
+    <section class="card"><h2>Monthly budget</h2>
+      <label for="budIn">Total budget for every month (₹)</label>
+      <div class="inline"><input id="budIn" type="number" min="0" placeholder="8000"><button id="budSave">Save</button></div>
+      <p class="mute" style="margin-top:10px">Tip: the 50/30/20 rule – 50% needs, 30% wants, 20% savings.</p>
+    </section>
+    <section class="card"><h2>Category limit</h2>
+      <label for="cbCat">Category</label><select id="cbCat"></select>
+      <label for="cbAmt" style="margin-top:8px">Limit (₹)</label>
+      <div class="inline"><input id="cbAmt" type="number" min="1" placeholder="1500"><button id="cbSave">Set limit</button></div>
+    </section>
+  </div>
+  <section class="card" style="margin-top:16px"><h2>Category budgets this month</h2><div id="cbList"></div></section>
+</main>
+
+<!-- GOALS -->
+<main id="goal" class="view">
+  <section class="card"><h2>New savings goal</h2>
+    <div class="inline"><input id="gName" maxlength="30" placeholder="Goal (e.g. New laptop)"><input id="gTarget" type="number" min="1" placeholder="Target ₹"><button id="gAdd">Add goal</button></div>
+  </section>
+  <div id="goalList" class="goals"></div>
+</main>
+
+<!-- INSIGHTS -->
+<main id="ins" class="view">
+  <div class="kpis" id="kpis"></div>
+  <div class="grid" style="margin-top:16px">
+    <section class="card"><h2>Spending by weekday</h2><canvas id="wk" height="200"></canvas></section>
+    <section class="card"><h2>Smart tips</h2><ul id="tips" class="tips"></ul></section>
+  </div>
+</main>
+
+<!-- SETTINGS -->
+<main id="set" class="view">
+  <div class="grid">
+    <section class="card"><h2>Profile</h2>
+      <label for="nameIn">Your name</label>
+      <div class="inline"><input id="nameIn" maxlength="20" placeholder="e.g. Aman"><button id="nameSave">Save</button></div>
+    </section>
+    <section class="card"><h2>Your data</h2>
+      <div class="btns">
+        <button class="ghost" id="csv">Export month CSV</button>
+        <button class="ghost" id="bk">Backup (JSON)</button>
+        <button class="ghost" id="rs">Restore backup</button>
+        <button class="ghost" id="demo">Load sample data</button>
+        <button class="ghost danger" id="clear">Clear everything</button>
+      </div>
+      <input type="file" id="file" accept=".json" hidden>
+      <p class="mute" style="margin-top:10px">Everything is stored only in this browser (localStorage).</p>
+    </section>
+  </div>
+</main>
+</div>
+<button class="fab" id="fab" aria-label="Add transaction">+</button>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
